@@ -1,2 +1,4 @@
-# turbo-plan
-"turbo run $task --dry=json" into workflow matrix
+# Turbo Plan
+
+Plan turbo run tasks in a separate action to run them parallel in a matrix job.
+

@@ -1,0 +1,44 @@
+name: 'Turbo Plan'
+description: 'Plan turbo run tasks in a separate action to run them parallel in a matrix job.'
+author: 'Fuxing Loh'
+branding:
+  icon: layout
+  color: blue
+
+inputs:
+  task:
+    description: 'Task to plan for turbo run'
+    required: true
+
+outputs:
+  packages:
+    description: "Packages that contains the task"
+    value: ${{ steps.plan.outputs.result }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      with:
+        node-version-file: '.nvmrc'
+
+    - shell: bash
+      run: npm install -g turbo
+
+    - id: plan
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      env:
+        TASK: ${{ inputs.task }}
+      with:
+        script: |
+          const {
+            spawnSync
+          } = require('node:child_process');
+          const task = process.env.TASK;
+          const child = spawnSync('npx', ['turbo', 'run', task, '--dry=json'], {
+            maxBuffer: 100_000_000, encoding: 'utf-8'
+          });
+          const tasks = JSON.parse(child.stdout).tasks;
+          return tasks
+            .filter((t) => t.task === task && t.command !== '<NONEXISTENT>')
+            .map((t) => t.package);
