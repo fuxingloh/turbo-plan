@@ -18,7 +18,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - run: npm install -g turbo
+    - run: npm install -g turbo@1
       shell: bash
 
     - id: plan
